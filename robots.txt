@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /abtal/
+Disallow: /quran-sync/
+
+Sitemap: https://rakaztech.com/sitemap.xml
