@@ -1,0 +1,25 @@
+# يحدّث بيانات تطبيق POV من صفحة الدليل (rakaztech/pov-guide) كل ساعتين.
+name: POV app data
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch guide page
+        run: curl -fsSL https://raw.githubusercontent.com/rakaztech/pov-guide/main/index.html -o /tmp/guide.html
+      - name: Generate
+        run: node tools/pov-app-data.mjs /tmp/guide.html pov-app
+      - name: Publish if changed
+        run: |
+          git add pov-app
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git config user.name "rakaz-bot"
+          git config user.email "hello@rakaztech.com"
+          git commit -q -m "POV app data: $(date -u +%F)"
+          git push
