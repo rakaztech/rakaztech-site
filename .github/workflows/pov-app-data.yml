@@ -1,8 +1,8 @@
-# يحدّث بيانات تطبيق POV من صفحة الدليل (rakaztech/pov-guide) كل ساعتين.
+# يحدّث بيانات تطبيق POV من صفحة الدليل (rakaztech/pov-guide) كل نص ساعة.
 name: POV app data
 on:
   schedule:
-    - cron: "17 */2 * * *"
+    - cron: "7,37 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
