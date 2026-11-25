@@ -29,6 +29,20 @@ const GEO = opt("GEO"), IG = opt("IG"), MENU = opt("MENU"), TAGS = opt("TAGS"), 
 const LOGOS = opt("LOGOS"), LOGOS_R = opt("LOGOS_R"), BN = opt("BN_IMG");
 
 fs.mkdirSync(outDir + "/logos", { recursive: true });
+// صور الأماكن: مجلد لكل مكان داخل pov-app/photos/ باسم الـ slug، والصور داخله تترتب بالاسم.
+const BASE = "https://rakaztech.com/pov-app/";
+export function slug(name) {
+  const ascii = name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return ascii.length >= 3 ? ascii : "p-" + crypto.createHash("md5").update(name).digest("hex").slice(0, 8);
+}
+function photosOf(name) {
+  const dir = `${outDir}/photos/${slug(name)}`;
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort()
+    .map((f) => `${BASE}photos/${slug(name)}/${encodeURIComponent(f)}`);
+}
+const folders = {};
 const nameOf = (it) => (typeof it === "string" ? it : it.n);
 const places = {};
 const used = new Set();
@@ -51,6 +65,9 @@ for (const c of cats) for (const it of c.items) {
     p.logo = id;
     p.round = !!LOGOS_R[n];
   }
+  const ph = photosOf(n);
+  if (ph.length) p.photos = ph;
+  folders[n] = slug(n);
   places[n] = p;
 }
 for (const f of fs.readdirSync(outDir + "/logos")) if (!used.has(f)) fs.unlinkSync(`${outDir}/logos/${f}`);
@@ -67,4 +84,7 @@ const data = {
 };
 if (data.categories.length < 3 || Object.keys(places).length < 50) throw new Error("data looks broken, not publishing");
 fs.writeFileSync(outDir + "/data.json", JSON.stringify(data));
-console.log(updated, data.categories.length, "categories", Object.keys(places).length, "places");
+// دليل أسماء المجلدات (اسم المكان ← اسم مجلد صوره)
+fs.mkdirSync(outDir + "/photos", { recursive: true });
+fs.writeFileSync(outDir + "/photos/folders.json", JSON.stringify(folders, null, 1));
+console.log(updated, data.categories.length, "categories", Object.keys(places).length, "places", Object.values(places).filter((p) => p.photos).length, "with photos");
