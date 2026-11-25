@@ -1,9 +1,16 @@
-# يحدّث بيانات تطبيق POV من صفحة الدليل (rakaztech/pov-guide) كل نص ساعة.
+# يحدّث بيانات تطبيق POV من صفحة الدليل (rakaztech/pov-guide).
+# - فوري: مستودع الدليل يرسل إشارة pov-guide-updated أول ما يتعدل (يحتاج سر APP_SYNC_TOKEN هناك).
+# - احتياط: كل 10 دقايق (جدول GitHub يتأخر ويفوّت تشغيلات، فما نعتمد عليه بروحه).
 name: POV app data
 on:
+  repository_dispatch:
+    types: [pov-guide-updated]
   schedule:
-    - cron: "7,37 * * * *"
+    - cron: "3-59/10 * * * *"
   workflow_dispatch:
+concurrency:
+  group: pov-app-data
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
